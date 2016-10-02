@@ -9,11 +9,17 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
+#include <algorithm>
+#include <thread>
 
 #include "Job.h"
-#include "Quick.h"
+#include "FCFS.h"
+#include "SJF.h"
 
 using namespace std;
+
+
+/****   Definitions   ****/
 
 typedef vector<Job*> JobList;
 typedef vector<Job*>::iterator JobIt;
@@ -21,47 +27,56 @@ typedef vector<Job*>::iterator JobIt;
 JobList LoadedJobsList;
 
 bool PrepareJobs(string fName);
+void CallFCFS(Scheduler::FCFS* fcfs);
+void CallSJF(Scheduler::SJF* sjf);
+//void CallFCFS(Scheduler::* fcfs);
 
+
+/****   Main   ****/
 
 int main(int argc, char** argv)
 {
-/*
-	for(int i = 0; i < argc; i++)
-		cout << *argv[i] << endl;
-*/
-
-/*
-	Job aa(0, 12);
-	aa.Init();
-
-	usleep(12000);
-
-	aa.Process();
-
-	usleep(24000);
-
-	aa.End();
-
-	printf("Wait time: %3.1f ms\n", aa.getWaitTime());
-	printf("Return time: %3.1f ms\n", aa.getRetTime());
-*/
-
-
-	printf("o arquivo %s\n", PrepareJobs("input4")? "existe." : "não existe!");
-
-	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it){
-		printf("%i, %i\n", (*it)->getCall(), (*it)->getDuration());
+	if(!PrepareJobs("input4")){
+		cerr << "[ERROR] The file doesn't exist.\n";
+		return -1;
 	}
 
+	Scheduler::FCFS sch;
+
+	thread Caller(CallFCFS, &sch);
+	thread FCFS(&Scheduler::FCFS::Schedule, sch);
+
+	Caller.join();
+	FCFS.join();
+
+	float WaitSumVal = 0;
+	float RetSumVal = 0;
+	int n = 0;
+
+	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it){
+		++n;
+		printf("n(%i):Wait [ %f ] += %f\n", n, WaitSumVal, (*it)->getWaitTime());
+		WaitSumVal += (*it)->getWaitTime();
+		RetSumVal += (*it)->getRetTime();
+	}
+
+	float AvgWait = WaitSumVal/n;
+	float AvgRet = RetSumVal/n;
+
+	printf("Average Wait time: %3.1f\n", AvgWait);
+	printf("Average Ret time: %3.1f\n", AvgRet);
+
+	// Finalizing
 
 	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it)
 		delete *it;
-
 	LoadedJobsList.clear();
 
 	return 0;
 }
 
+
+/****   Functions   ****/
 
 bool PrepareJobs(string fName) // Return if the file either exists or not
 {
@@ -79,8 +94,6 @@ bool PrepareJobs(string fName) // Return if the file either exists or not
 			int beg, dur; // Begin, Duration
 			string Buff;
 
-			cout << "Line: " << line << endl;
-
 			for(i = 0; line[i] != ' '; ++i)
 				Buff += line[i];
 
@@ -91,14 +104,28 @@ bool PrepareJobs(string fName) // Return if the file either exists or not
 				Buff += line[i];
 
 			dur = stoi(Buff);
-			//printf("Beg: %i, Dur: %i\n", beg, dur);
 			LoadedJobsList.push_back(new Job(beg, dur));
 		}
-		for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it)
-			printf("%i, %i\n", (*it)->getCall(), (*it)->getDuration());
-
-		Sort::Quick sort(&LoadedJobsList, true);
 	}
 
 	return ret;
+}
+
+
+void CallFCFS(Scheduler::FCFS* fcfs)
+{
+	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it){
+		printf("> sleep for: %i\n", (*it)->getCall());
+		usleep((*it)->getCall() * 1000);
+		fcfs->InsertJob(*it);
+	}
+	fcfs->Stop();
+}
+
+void CallSJF(Scheduler::SJF* sjf)
+{
+	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it){
+		usleep((*it)->getCall() * 1000);
+		sjf->InsertJob(*it);
+	}
 }

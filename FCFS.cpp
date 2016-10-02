@@ -10,16 +10,20 @@
 namespace Scheduler{
 
 mutex Scheduler::FCFS::_mute;
+mutex Scheduler::FCFS::_lmute;
 vector<Job*> Scheduler::FCFS::_JobsList;
+bool Scheduler::FCFS::_loop;
 
 FCFS::FCFS()
 {
-	;
+	_lmute.lock();
+	_loop = true;
+	_lmute.unlock();
 }
 
 void FCFS::InsertJob(Job* in)
 {
-	this->_mute.lock();
+	_mute.lock();
 
 	in->Init();
 	_JobsList.push_back(in);
@@ -27,21 +31,38 @@ void FCFS::InsertJob(Job* in)
 	_mute.unlock();
 }
 
-void FCFS::ScheduleJobs(void)
+void FCFS::Schedule(void)
 {
-	for(JobIt it = _JobsList.begin(); it != _JobsList.end(); ++it){
-		Job* aux = *it;
+	//printf("helohelo\n");
+	bool loop = true;
 
-		_mute.lock();
+	while(loop){
+		while(!_JobsList.empty()){
+			Job* aux = (*_JobsList.begin());
+			JobIt beg = _JobsList.begin();
 
-		aux->Process();
-		_JobsList.erase(it);
+			_mute.lock();
 
-		_mute.unlock();
+			aux->Process();
+			_JobsList.erase(beg);
 
-		usleep(aux->getDuration() * 1000); // Milliseconds to Microseconds
-		aux->End();
+			_mute.unlock();
+
+			printf(">> sleep for: %ims\n\n", aux->getDuration());
+			usleep(aux->getDuration() * 1000);
+			aux->End();
+		}
+		_lmute.lock();
+		loop = _loop? true : false;
+		_lmute.unlock();
 	}
+}
+
+void FCFS::Stop(void)
+{
+	_lmute.lock();
+	_loop = false;
+	_lmute.unlock();
 }
 
 } /* namespace Scheduler */

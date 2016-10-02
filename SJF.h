@@ -1,12 +1,12 @@
 /*
- * FCFS.h
+ * SJF.h
  *
- *  Created on: 1 de out de 2016
+ *  Created on: 2 de out de 2016
  *      Author: johannes
  */
 
-#ifndef FCFS_H_
-#define FCFS_H_
+#ifndef SJF_H_
+#define SJF_H_
 
 #include <iostream>
 #include <vector>
@@ -14,27 +14,28 @@
 #include <thread>
 #include <mutex>
 #include <unistd.h>
+#include <algorithm>
 
 #include "Job.h"
 
 using namespace std;
 
-namespace Scheduler{
+namespace Scheduler {
 
 typedef vector<Job*>::iterator JobIt;
 
-class FCFS{
+class SJF {
 private:
-	static mutex _mute, _lmute;
+	static mutex _mute;
 	static vector<Job*> _JobsList;
-	static bool _loop;
+	//bool DurComp(Job* a, Job* b);
 public:
-	FCFS();
+	SJF();
+	void print(void);
 	void InsertJob(Job* in);
 	void Schedule(void);
-	void Stop(void);
 };
 
 } /* namespace Scheduler */
 
-#endif /* FCFS_H_ */
+#endif /* SJF_H_ */
