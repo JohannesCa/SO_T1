@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	Job aa(0, 12);
 	aa.Init();
 
-	usleep(12000);
+	usleep(12000);;;;;;
 
 	aa.Process();
 
