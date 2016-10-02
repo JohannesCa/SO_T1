@@ -13,6 +13,9 @@
 #include <chrono>
 #include <ctime>
 #include <sys/time.h>
+#include <vector>
+
+using namespace std;
 
 typedef struct timeval Time;
 
@@ -33,8 +36,8 @@ public:
 
 	float getWaitTime(void);
 	float getRetTime(void);
-	int getCall(void){return this->_duration;};
-	int getDuration(void){return this->_call;};
+	int getCall(void){return this->_call;};
+	int getDuration(void){return this->_duration;};
 };
 
 #endif /* JOB_H_ */

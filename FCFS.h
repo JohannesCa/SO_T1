@@ -10,15 +10,23 @@
 
 #include <iostream>
 #include <vector>
+
+#include <thread>
+#include <mutex>
+#include <unistd.h>
+
 #include "Job.h"
 
 using namespace std;
 
 namespace Scheduler{
 
+typedef vector<Job*>::iterator JobIt;
+
 class FCFS{
 private:
-	vector<Job*> _JobsLits;
+	static mutex _mute;
+	static vector<Job*> _JobsList;
 public:
 	FCFS();
 	void InsertJob(Job* in);

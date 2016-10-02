@@ -11,21 +11,24 @@
 #include <vector>
 
 #include "Job.h"
+#include "Quick.h"
 
 using namespace std;
 
+typedef vector<Job*> JobList;
+typedef vector<Job*>::iterator JobIt;
+
+JobList LoadedJobsList;
 
 bool PrepareJobs(string fName);
-
-vector<Job*> LoadedJobsList;
 
 
 int main(int argc, char** argv)
 {
-
+/*
 	for(int i = 0; i < argc; i++)
 		cout << *argv[i] << endl;
-
+*/
 
 /*
 	Job aa(0, 12);
@@ -44,9 +47,14 @@ int main(int argc, char** argv)
 */
 
 
-	printf("o arquivo %s\n", PrepareJobs("inputs")? "existe." : "não existe!");
+	printf("o arquivo %s\n", PrepareJobs("input4")? "existe." : "não existe!");
 
-	for(vector<Job*>::iterator it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it)
+	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it){
+		printf("%i, %i\n", (*it)->getCall(), (*it)->getDuration());
+	}
+
+
+	for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it)
 		delete *it;
 
 	LoadedJobsList.clear();
@@ -71,6 +79,8 @@ bool PrepareJobs(string fName) // Return if the file either exists or not
 			int beg, dur; // Begin, Duration
 			string Buff;
 
+			cout << "Line: " << line << endl;
+
 			for(i = 0; line[i] != ' '; ++i)
 				Buff += line[i];
 
@@ -81,9 +91,13 @@ bool PrepareJobs(string fName) // Return if the file either exists or not
 				Buff += line[i];
 
 			dur = stoi(Buff);
-			printf("Beg: %i, Dur: %i\n", beg, dur);
+			//printf("Beg: %i, Dur: %i\n", beg, dur);
 			LoadedJobsList.push_back(new Job(beg, dur));
 		}
+		for(JobIt it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it)
+			printf("%i, %i\n", (*it)->getCall(), (*it)->getDuration());
+
+		Sort::Quick sort(&LoadedJobsList, true);
 	}
 
 	return ret;

@@ -9,14 +9,39 @@
 
 namespace Scheduler{
 
-FCFS::FCFS(){
+mutex Scheduler::FCFS::_mute;
+vector<Job*> Scheduler::FCFS::_JobsList;
 
+FCFS::FCFS()
+{
+	;
 }
 
 void FCFS::InsertJob(Job* in)
 {
+	this->_mute.lock();
+
 	in->Init();
-	this->_JobsLits.push_back(in);
+	_JobsList.push_back(in);
+
+	_mute.unlock();
+}
+
+void FCFS::ScheduleJobs(void)
+{
+	for(JobIt it = _JobsList.begin(); it != _JobsList.end(); ++it){
+		Job* aux = *it;
+
+		_mute.lock();
+
+		aux->Process();
+		_JobsList.erase(it);
+
+		_mute.unlock();
+
+		usleep(aux->getDuration() * 1000); // Milliseconds to Microseconds
+		aux->End();
+	}
 }
 
 } /* namespace Scheduler */
