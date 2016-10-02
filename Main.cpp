@@ -15,7 +15,9 @@
 using namespace std;
 
 
-vector<Job*> preJobList;
+bool PrepareJobs(string fName);
+
+vector<Job*> LoadedJobsList;
 
 
 int main(int argc, char** argv)
@@ -24,10 +26,12 @@ int main(int argc, char** argv)
 	for(int i = 0; i < argc; i++)
 		cout << *argv[i] << endl;
 
+
+/*
 	Job aa(0, 12);
 	aa.Init();
 
-	usleep(12000);;;;;;
+	usleep(12000);
 
 	aa.Process();
 
@@ -35,23 +39,51 @@ int main(int argc, char** argv)
 
 	aa.End();
 
-	printf("Wait time: %5.1f ms\n", aa.getWaitTime());
-	printf("Return time: %5.1f ms\n", aa.getRetTime());
+	printf("Wait time: %3.1f ms\n", aa.getWaitTime());
+	printf("Return time: %3.1f ms\n", aa.getRetTime());
+*/
+
+
+	printf("o arquivo %s\n", PrepareJobs("inputs")? "existe." : "não existe!");
+
+	for(vector<Job*>::iterator it = LoadedJobsList.begin(); it != LoadedJobsList.end(); ++it)
+		delete *it;
+
+	LoadedJobsList.clear();
 
 	return 0;
 }
 
 
-bool ReadFile(string fName)
+bool PrepareJobs(string fName) // Return if the file either exists or not
 {
-	bool ret;
+	bool ret = true;
 
 	string line;
 	ifstream input;
 	input.open(fName, ios::in);
 
-	while(getline(input, line)){
-		;
+	if(!input)
+		ret = false;
+	else{
+		while(getline(input, line)){
+			int i;
+			int beg, dur; // Begin, Duration
+			string Buff;
+
+			for(i = 0; line[i] != ' '; ++i)
+				Buff += line[i];
+
+			beg = stoi(Buff);
+			Buff.clear();
+
+			for(++i; line[i] != '\0'; ++i)
+				Buff += line[i];
+
+			dur = stoi(Buff);
+			printf("Beg: %i, Dur: %i\n", beg, dur);
+			LoadedJobsList.push_back(new Job(beg, dur));
+		}
 	}
 
 	return ret;

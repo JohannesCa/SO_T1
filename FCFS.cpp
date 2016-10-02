@@ -13,4 +13,10 @@ FCFS::FCFS(){
 
 }
 
+void FCFS::InsertJob(Job* in)
+{
+	in->Init();
+	this->_JobsLits.push_back(in);
+}
+
 } /* namespace Scheduler */

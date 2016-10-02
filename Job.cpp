@@ -54,5 +54,3 @@ float Job::getRetTime(void)
 	ret = usec * 0.001;
 	return ret;
 }
-
-
